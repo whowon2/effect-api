@@ -34,11 +34,6 @@ export const UsersGroup = HttpApiGroup.make("Users")
       .addError(UserNotFound, { status: 404 })
   )
   .add(
-    HttpApiEndpoint.post("createUser")`/users`
-      .setPayload(CreateUser)
-      .addSuccess(User, { status: 201 })
-  )
-  .add(
     HttpApiEndpoint.patch("updateUser")`/users/:id`
       .setPath(Schema.Struct({ id: Schema.NumberFromString }))
       .setPayload(UpdateUser)

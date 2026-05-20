@@ -21,13 +21,6 @@ export const UsersLive = HttpApiBuilder.group(MyApi, "Users", (handlers) =>
         return user
       })
     )
-    .handle("createUser", ({ payload }) =>
-      Effect.gen(function* () {
-        const db = yield* PgDrizzle
-        const [user] = yield* db.insert(schema.users).values(payload).returning().pipe(Effect.orDie)
-        return user!
-      })
-    )
     .handle("updateUser", ({ path: { id }, payload }) =>
       Effect.gen(function* () {
         const db = yield* PgDrizzle
