@@ -1,15 +1,9 @@
-import { HttpApi, HttpApiBuilder, HttpApiEndpoint, HttpApiGroup, HttpApiScalar, HttpLayerRouter } from "@effect/platform";
-import { BunHttpServer, BunRuntime } from "@effect/platform-bun";
-import { Effect, Layer, Schema } from "effect";
-import { DbLive } from "./db";
-
-const MyApi = HttpApi.make("MyApi").add(
-  HttpApiGroup.make("Do You Have Brio").add(
-    HttpApiEndpoint.get("comunista")`/`.addSuccess(Schema.String)
-  ).add(
-    HttpApiEndpoint.get("fodase")`/fodase`.addSuccess(Schema.String)
-  )
-)
+import { HttpApiBuilder, HttpApiScalar, HttpLayerRouter } from "@effect/platform"
+import { BunHttpServer, BunRuntime } from "@effect/platform-bun"
+import { Effect, Layer } from "effect"
+import { MyApi } from "./api"
+import { DbLive } from "./db"
+import { UsersLive } from "./users/handler"
 
 const GreetingsLive = HttpApiBuilder.group(MyApi, "Do You Have Brio", (handlers) =>
   handlers
@@ -20,7 +14,8 @@ const GreetingsLive = HttpApiBuilder.group(MyApi, "Do You Have Brio", (handlers)
 const HttpApiRoutes = HttpLayerRouter.addHttpApi(MyApi, {
   openapiPath: "/docs/openapi.json"
 }).pipe(
-  Layer.provide(GreetingsLive)
+  Layer.provide(GreetingsLive),
+  Layer.provide(UsersLive),
 )
 
 const DocsRoute = HttpApiScalar.layerHttpLayerRouter({
@@ -32,9 +27,13 @@ const AllRoutes = Layer.mergeAll(HttpApiRoutes, DocsRoute).pipe(
   Layer.provide(HttpLayerRouter.cors())
 )
 
-HttpLayerRouter.serve(AllRoutes).pipe(
-  Layer.provide(BunHttpServer.layer({port: 5000})),
-  Layer.provide(DbLive),
-  Layer.launch,
-  BunRuntime.runMain
+const InfraLayer = Layer.mergeAll(
+  BunHttpServer.layer({ port: 5000 }),
+  DbLive,
 )
+
+const AppLayer = HttpLayerRouter.serve(AllRoutes).pipe(
+  Layer.provide(InfraLayer),
+)
+
+Layer.launch(AppLayer).pipe(BunRuntime.runMain)
