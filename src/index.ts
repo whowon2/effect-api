@@ -4,12 +4,13 @@ import { Effect, Layer } from "effect"
 import { MyApi } from "./api"
 import { DbLive } from "./db"
 import { UsersLive } from "./users/handler"
+import { AuthLive } from "./auth/handler"
 
 
 const HttpApiRoutes = HttpLayerRouter.addHttpApi(MyApi, {
   openapiPath: "/docs/openapi.json"
 }).pipe(
-  Layer.provide(UsersLive),
+  Layer.provide(Layer.mergeAll(UsersLive, AuthLive)),
 )
 
 const DocsRoute = HttpApiScalar.layerHttpLayerRouter({
