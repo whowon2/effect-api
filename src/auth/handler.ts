@@ -10,7 +10,8 @@ export const AuthLive = HttpApiBuilder.group(MyApi, "Auth", (handlers) =>
     .handle("registerUser", ({ payload }) =>
       Effect.gen(function* () {
         const db = yield* PgDrizzle
-        const [user] = yield* db.insert(schema.users).values(payload).returning().pipe(
+        const hashedPassword = yield* Effect.promise(() => Bun.password.hash(payload.password))
+        const [user] = yield* db.insert(schema.users).values({ ...payload, password: hashedPassword }).returning().pipe(
           Effect.catchIf(
             (e): e is SqlError => e instanceof SqlError && (e.cause as any)?.cause?.code === "23505",
             () => new UserAlreadyExists({ email: payload.email })
