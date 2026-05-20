@@ -5,6 +5,7 @@ import { MyApi } from "./api"
 import { DbLive } from "./db"
 import { UsersLive } from "./users/handler"
 import { AuthLive } from "./auth/handler"
+import { TelemetryLive } from "./telemetry"
 
 
 const HttpApiRoutes = HttpLayerRouter.addHttpApi(MyApi, {
@@ -25,6 +26,7 @@ const AllRoutes = Layer.mergeAll(HttpApiRoutes, DocsRoute).pipe(
 const InfraLayer = Layer.mergeAll(
   BunHttpServer.layer({ port: 5000 }),
   DbLive,
+  TelemetryLive,
 )
 
 const AppLayer = HttpLayerRouter.serve(AllRoutes).pipe(
