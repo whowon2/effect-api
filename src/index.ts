@@ -5,16 +5,10 @@ import { MyApi } from "./api"
 import { DbLive } from "./db"
 import { UsersLive } from "./users/handler"
 
-const GreetingsLive = HttpApiBuilder.group(MyApi, "Do You Have Brio", (handlers) =>
-  handlers
-    .handle("comunista", () => Effect.succeed("ateu e viado"))
-    .handle("fodase", () => Effect.succeed("caralho pa"))
-)
 
 const HttpApiRoutes = HttpLayerRouter.addHttpApi(MyApi, {
   openapiPath: "/docs/openapi.json"
 }).pipe(
-  Layer.provide(GreetingsLive),
   Layer.provide(UsersLive),
 )
 
